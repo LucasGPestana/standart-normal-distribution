@@ -92,5 +92,3 @@ df_z_values_2 = convert_axes_to_float(df_z_values_2)
 Z_VALUES = pd.concat((df_z_values_1, df_z_values_2))
 
 Z_VALUES = Z_VALUES.apply(lambda x: x.str.replace(",", ".").astype(float))
-
-print(str(get_percentage_value("2,71", Z_VALUES)).replace(".", ","))
