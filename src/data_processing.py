@@ -32,7 +32,13 @@ def get_database(filepath: str):
 # Pega a porcentagem correspondente ao z percentil passado como argumento
 def get_percentage_value(z_percentile: str, df: pd.DataFrame):
 
-  return df.loc[*process_input(z_percentile)]
+  percentage = df.loc[*process_input(z_percentile)]
+
+  if isinstance(percentage, pd.Series):
+
+    percentage = percentage.values[0]
+  
+  return percentage
 
 def process_input(input_value):
 
