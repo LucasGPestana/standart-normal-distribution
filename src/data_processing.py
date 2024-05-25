@@ -156,6 +156,22 @@ def process_z_input(input_value: str) -> float:
   # Decompoe o número em duas partes: a primeira sendo o inteiro e a primeira casa decimal e o segundo a segunda casa decimal
   return (float(input_value[:-1]), float("0.0" + input_value[-1]))
 
+def verify_if_index_exists(index: str, df: pd.DataFrame, axis: int=0):
+
+  match axis:
+
+    case 0:
+
+      return index in list(df.index.values)
+
+    case 1:
+
+      return index in list(df.columns.values)
+    
+    case _:
+
+      raise ValueError("'axis' value must be 0 or 1")
+
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 filepaths = list(map(lambda x: os.path.join("files", x), os.listdir("files")))
 
@@ -168,15 +184,22 @@ else:
   os.system("clear")
 
 # Removendo a coluna (e a Series que a reprensta) com valores nulos
-df_z_values_1 = df_z_values_1.drop("0", axis=1)
+if verify_if_index_exists("0", df_z_values_1, 1):
+
+  df_z_values_1 = df_z_values_1.drop("0", axis=1)
 
 # Definindo o nome das colunas e guardando-as em uma variável auxiliar
 column_values = df_z_values_1.loc[0].values[1:]
 
-df_z_values_1 = df_z_values_1.set_index(df_z_values_1["Unnamed: 0"].values)
+if verify_if_index_exists("Unnamed: 0", df_z_values_1, 1):
 
-df_z_values_1 = df_z_values_1.drop("Unnamed: 0", axis=1)
-df_z_values_1 = df_z_values_1.drop('z', axis=0)
+  df_z_values_1 = df_z_values_1.set_index(df_z_values_1["Unnamed: 0"].values)
+
+  df_z_values_1 = df_z_values_1.drop("Unnamed: 0", axis=1)
+
+if verify_if_index_exists('z', df_z_values_1, 0):
+
+  df_z_values_1 = df_z_values_1.drop('z', axis=0)
 
 # Alterando os nomes das colunas para os valores correspondentes a 2a casa decimal de z
 df_z_values_1.columns = column_values
@@ -192,11 +215,13 @@ positive_indexes = list(df_z_values_1.index[-5:])
 # Alterando os índices do DataFrame para os valores correspondentes ao inteiro e 1a casa decimal de z
 df_z_values_1.index = negative_indexes + positive_indexes
 
-# Modificando os valores dos indíces a partir de uma series que representa um coluna
-df_z_values_2 = df_z_values_2.set_index(df_z_values_2['z'].values)
+if verify_if_index_exists('z', df_z_values_2, 1):
 
-# Removendo a coluna (e Series) com o name 'z'
-df_z_values_2 = df_z_values_2.drop('z', axis=1)
+  # Modificando os valores dos indíces a partir de uma series que representa um coluna
+  df_z_values_2 = df_z_values_2.set_index(df_z_values_2['z'].values)
+
+  # Removendo a coluna (e Series) com o name 'z'
+  df_z_values_2 = df_z_values_2.drop('z', axis=1)
 
 df_z_values_2 = convert_axes_to_float(df_z_values_2)
 
