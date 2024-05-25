@@ -3,6 +3,7 @@ import tabula
 
 import os
 import sys
+import subprocess
 
 from typing import List
 
@@ -28,13 +29,28 @@ def get_database(filepath: str):
 
     print("O caminho especificado não se refere a um 'PDF'!")
     return None
+  
+  while True:
 
-  return tabula.read_pdf(filepath, encoding="latin-1")
+    try:
+
+      return tabula.read_pdf(filepath, encoding="latin-1")
+
+    except PermissionError:
+
+      completed_process = subprocess.run(["java", "--version"], stdout=subprocess.PIPE)
+
+      if not completed_process.stdout.startswith(b"java"):
+
+        os.system("sudo apt install openjdk-11-jdk")
+        os.system("clear")
 
 # Pega a porcentagem correspondente ao z percentil passado como argumento
 def get_percentage_value(z_percentile: str, df: pd.DataFrame):
 
-  percentage = df.loc[*process_z_input(z_percentile)]
+  row_index, column_index = process_z_input(z_percentile)
+
+  percentage = df.loc[row_index, column_index]
 
   if isinstance(percentage, pd.Series):
 
