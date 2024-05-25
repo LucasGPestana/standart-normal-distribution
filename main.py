@@ -21,9 +21,12 @@ if __name__ == "__main__":
 
   if namespace.func == get_percentage_value:
 
-    response = namespace.func(namespace.z_value, Z_VALUES) if not namespace.negative else namespace.func('-' + namespace.z_value, Z_VALUES)
+    response = ( 
+       f"\u03c6({namespace.z_value}) = {str(namespace.func(namespace.z_value, Z_VALUES)).replace('.', ',')}"
+       if not namespace.negative else f"\u03c6({'-' + namespace.z_value}) = {str(namespace.func('-' + namespace.z_value, Z_VALUES)).replace('.', ',')}"
+    )
 
-    print(f"\u03c6({namespace.z_value}) = {str(response).replace('.', ',')}")
+    print(response)
 
   else:
 
