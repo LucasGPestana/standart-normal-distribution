@@ -4,6 +4,8 @@ import tabula
 import os
 import sys
 
+from typing import Tuple, List
+
 # Trata o formato dos valores str dos índices das colunas e linhas e os converte para float
 def convert_axes_to_float(df: pd.DataFrame) -> pd.DataFrame:
 
@@ -40,7 +42,82 @@ def get_percentage_value(z_percentile: str, df: pd.DataFrame):
   
   return percentage
 
-def process_input(input_value):
+# Verifica se existe a porcentagem exata e, caso não, retorna uma lista contendo
+def verify_percentage_situations(percentage: str, 
+                                 df: pd.DataFrame, 
+                                 row_index: float, 
+                                 column_pos_index: int) -> List | float:
+  
+  iter_percentage_value = df.loc[row_index][df.columns[column_pos_index]]
+
+  iter_percentage_value = (
+
+    iter_percentage_value if not isinstance(iter_percentage_value, pd.Series) else iter_percentage_value.values[0]
+
+  )
+
+  if iter_percentage_value == percentage:
+
+    return [row_index, df.columns[column_pos_index]] if row_index > 0 else [row_index, -df.columns[column_pos_index]]
+  
+  if iter_percentage_value > percentage:
+
+    return (
+      [row_index, df.columns[column_pos_index - 1], df.columns[column_pos_index]] if row_index > 0 
+      else [row_index, -df.columns[column_pos_index + 1], -df.columns[column_pos_index]]
+    )
+
+def get_z_value(percentage: str, df: pd.DataFrame) -> float:
+
+  possible_values = list() # Caso não tenha o valor exato da porcentagem
+  percentage = process_percentage_value(percentage)
+
+  for index in df.index:
+
+    if index < 0:
+
+      for pos_column in range(len(df.columns) - 1, -1, -1):
+
+        possible_values = verify_percentage_situations(percentage, df, index, pos_column)
+
+        if possible_values: break
+      
+      if possible_values: break
+    
+    else:
+
+      for pos_column in range(0 ,len(df.columns), 1):
+
+        possible_values = verify_percentage_situations(percentage, df, index, pos_column)
+
+        # print(f"Linha: {index}\nColuna: {df.columns[pos_column]}\nValores possíveis: {possible_values}\n")
+
+        if possible_values: break
+      
+      if possible_values: break
+  
+  # O primeiro valor não é considerado pois se refere ao indice da linha selecionada
+  distances = list(map(lambda x: abs(df.loc[possible_values[0]][abs(x)] - percentage), possible_values[1:]))
+  minor_dist = 100000 # Representa a menor distância entre os valores
+
+  for i in range(len(distances)):
+
+    if minor_dist > distances[i]:
+
+      minor_dist = distances[i]
+      more_close_value = possible_values[1:][i]
+  
+  return possible_values[0] + more_close_value
+
+def process_percentage_value(percentage: str) -> float:
+
+  percentage = float(percentage.replace(',', '.'))
+
+  percentage = float("{:.4f}".format(percentage))
+
+  return percentage
+
+def process_input(input_value: str) -> float:
 
   # Altera a vírgula no número (caso tenha) para um ponto, e converte para float
   input_value = float(input_value.replace(",", "."))
