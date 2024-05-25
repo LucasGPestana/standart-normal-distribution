@@ -173,7 +173,7 @@ def verify_if_index_exists(index: str, df: pd.DataFrame, axis: int=0):
       raise ValueError("'axis' value must be 0 or 1")
 
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-filepaths = list(map(lambda x: os.path.join("files", x), os.listdir("files")))
+filepaths = list(map(lambda x: os.path.join("files", x), sorted(os.listdir("files"))))
 
 df_z_values_1 = get_database(filepaths[0])[0]
 df_z_values_2 = get_database(filepaths[1])[0]
