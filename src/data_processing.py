@@ -18,6 +18,14 @@ def convert_axes_to_float(df: pd.DataFrame) -> pd.DataFrame:
 
   return df
 
+def get_value_if_series(value: float | pd.Series) -> bool:
+
+  if isinstance(value, pd.Series):
+
+    return value.values[0]
+  
+  return value
+
 def get_database(filepath: str):
 
   if not os.path.isfile(filepath):
@@ -50,11 +58,7 @@ def get_percentage_value(z_percentile: str, df: pd.DataFrame):
 
   row_index, column_index = process_z_input(z_percentile)
 
-  percentage = df.loc[row_index, column_index]
-
-  if isinstance(percentage, pd.Series):
-
-    percentage = percentage.values[0]
+  percentage = get_value_if_series(df.loc[row_index, column_index])
   
   return percentage
 
@@ -65,13 +69,7 @@ def verify_percentage_situations(percentage: str,
                                  row_index: float, 
                                  column_pos_index: int) -> List:
   
-  iter_percentage_value = df.loc[row_index][df.columns[column_pos_index]]
-
-  iter_percentage_value = (
-
-    iter_percentage_value if not isinstance(iter_percentage_value, pd.Series) else iter_percentage_value.values[0]
-
-  )
+  iter_percentage_value = get_value_if_series(df.loc[row_index][df.columns[column_pos_index]])
 
   # A verificação do sinal do "row_index" garante que a operação aritmética de soma, para obter o valor z, seja feita corretamente
   if iter_percentage_value == percentage:
@@ -120,7 +118,11 @@ def get_z_value(percentage: str, df: pd.DataFrame) -> float:
   # São pegos as distâncias entre os valores de porcentagem correspondentes àquele valor z com relação a "percentage"
   # O primeiro valor não é considerado pois se refere ao indice da linha selecionada
   # A troca de sinais feita na função verify_percentage_situations para o índice das colunas será "corrigida" com a função abs (módulo)
-  distances = list(map(lambda x: abs(df.loc[possible_values_parts[0]][abs(x)] - percentage), possible_values_parts[1:]))
+  distances = list(
+    map(lambda x: abs(
+      get_value_if_series(df.loc[possible_values_parts[0]][abs(x)]) - percentage
+      ), possible_values_parts[1:])
+      )
   minor_dist = 100000 # Representa a menor distância entre os valores
 
   # Pega o índice da coluna que possui a menor distância de porcentagem em relação a "percentage"
